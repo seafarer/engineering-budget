@@ -92,6 +92,9 @@ const App: React.FC = () => {
             selectedProject={selectedProject}
             onDayClick={handleDayClick}
           />
+          <p className="text-sm text-gray-600 mt-3">
+            You can only add one project per day. Each day counts six hours toward your project.
+          </p>
         </div>
         
         <div>

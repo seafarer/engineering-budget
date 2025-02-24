@@ -50,7 +50,7 @@ const Calendar: React.FC<CalendarProps> = ({ month, allocations, projects, selec
       <div 
         key={`day-${day}`} 
         onClick={() => onDayClick(date)}
-        className={`p-2 min-h-20 border border-gray-200 hover:bg-gray-50 cursor-pointer ${
+        className={`p-2 min-h-24 border border-gray-200 hover:bg-gray-50 cursor-pointer ${
           selectedProject ? 'border-l-2 border-l-blue-300' : ''
         }`}
         style={{ 
