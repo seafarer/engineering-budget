@@ -67,6 +67,18 @@ const App: React.FC = () => {
     return allocationsCount * 6; // 6 hours per day
   };
 
+  const deleteProject = (projectId: string) => {
+    setProjects(projects.filter(p => p.id !== projectId));
+    setAllocations(allocations.filter(a => a.projectId !== projectId));
+    if (selectedProject?.id === projectId) {
+      setSelectedProject(null);
+    }
+  };
+
+  const removeAllocation = (date: string) => {
+    setAllocations(allocations.filter(a => a.date !== date));
+  };
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Engineering Time Budget</h1>
@@ -91,6 +103,7 @@ const App: React.FC = () => {
             projects={projects}
             selectedProject={selectedProject}
             onDayClick={handleDayClick}
+            onRemoveAllocation={removeAllocation}
           />
           <p className="text-sm text-gray-600 mt-3">
             You can only add one project per day. Each day counts six hours toward your project.
@@ -107,6 +120,7 @@ const App: React.FC = () => {
               selectedProject={selectedProject}
               onSelectProject={setSelectedProject}
               calculateHoursUsed={getProjectUsage}
+              onDeleteProject={deleteProject}
             />
           </div>
         </div>
