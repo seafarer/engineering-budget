@@ -25,7 +25,7 @@ const ProjectList: React.FC<ProjectListProps> = ({
             key={project.id}
             onClick={() => onSelectProject(selectedProject?.id === project.id ? null : project)}
             className={`p-3 border border-gray-300 rounded cursor-pointer transition-all ${
-              selectedProject?.id === project.id ? 'ring-2 ring-blue-500' : 'hover:bg-gray-50'
+              selectedProject?.id === project.id ? 'ring-2 ring-sky-600' : 'hover:bg-gray-50'
             }`}
           >
             <div className="flex justify-between items-center">
