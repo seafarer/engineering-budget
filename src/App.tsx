@@ -12,7 +12,21 @@ const App: React.FC = () => {
   
   const [allocations, setAllocations] = useState<DayAllocation[]>(() => {
     const saved = localStorage.getItem('allocations');
-    return saved ? JSON.parse(saved) : [];
+    if (!saved) return [];
+    
+    // Migrate old format to new format
+    const parsed = JSON.parse(saved);
+    if (parsed.length > 0 && 'projectId' in parsed[0]) {
+      interface OldAllocation {
+        date: string;
+        projectId: string;
+      }
+      return parsed.map((a: OldAllocation) => ({
+        date: a.date,
+        projectIds: [a.projectId]
+      }));
+    }
+    return parsed;
   });
 
   const [currentMonth, setCurrentMonth] = useState<Date>(() => new Date());
@@ -34,23 +48,28 @@ const App: React.FC = () => {
     if (!selectedProject) return;
     
     const dateStr = date.toISOString().split('T')[0];
+    const existing = allocations.find(a => a.date === dateStr);
     
-    // Check if day already has an allocation
-    const existingIndex = allocations.findIndex(a => a.date === dateStr);
-    
-    if (existingIndex >= 0) {
-      // Remove allocation if clicking on the same project
-      if (allocations[existingIndex].projectId === selectedProject.id) {
-        setAllocations(allocations.filter((_, i) => i !== existingIndex));
-      } else {
-        // Replace with new project
-        const newAllocations = [...allocations];
-        newAllocations[existingIndex] = { date: dateStr, projectId: selectedProject.id };
-        setAllocations(newAllocations);
+    if (existing) {
+      if (existing.projectIds.includes(selectedProject.id)) {
+        // Remove this project
+        setAllocations(allocations.map(a => 
+          a.date === dateStr 
+            ? { ...a, projectIds: a.projectIds.filter(id => id !== selectedProject.id) }
+            : a
+        ).filter(a => a.projectIds.length > 0));
+      } else if (existing.projectIds.length < 2) {
+        // Add as second project
+        setAllocations(allocations.map(a => 
+          a.date === dateStr 
+            ? { ...a, projectIds: [...a.projectIds, selectedProject.id] }
+            : a
+        ));
       }
+      // If already has 2 projects, do nothing
     } else {
       // Add new allocation
-      setAllocations([...allocations, { date: dateStr, projectId: selectedProject.id }]);
+      setAllocations([...allocations, { date: dateStr, projectIds: [selectedProject.id] }]);
     }
   };
 
@@ -63,20 +82,37 @@ const App: React.FC = () => {
   };
 
   const getProjectUsage = (projectId: string) => {
-    const allocationsCount = allocations.filter(a => a.projectId === projectId).length;
-    return allocationsCount * 6; // 6 hours per day
+    return allocations.reduce((total, alloc) => {
+      if (alloc.projectIds.includes(projectId)) {
+        return total + (alloc.projectIds.length === 1 ? 6 : 3);
+      }
+      return total;
+    }, 0);
   };
 
   const deleteProject = (projectId: string) => {
     setProjects(projects.filter(p => p.id !== projectId));
-    setAllocations(allocations.filter(a => a.projectId !== projectId));
+    setAllocations(allocations
+      .map(a => ({
+        ...a,
+        projectIds: a.projectIds.filter(id => id !== projectId)
+      }))
+      .filter(a => a.projectIds.length > 0)
+    );
     if (selectedProject?.id === projectId) {
       setSelectedProject(null);
     }
   };
 
-  const removeAllocation = (date: string) => {
-    setAllocations(allocations.filter(a => a.date !== date));
+  const removeAllocation = (date: string, projectId: string) => {
+    setAllocations(allocations
+      .map(a => 
+        a.date === date 
+          ? { ...a, projectIds: a.projectIds.filter(id => id !== projectId) }
+          : a
+      )
+      .filter(a => a.projectIds.length > 0)
+    );
   };
 
   return (
@@ -106,7 +142,7 @@ const App: React.FC = () => {
             onRemoveAllocation={removeAllocation}
           />
           <p className="text-sm text-gray-600 mt-3">
-            You can only add one project per day. Each day counts six hours toward your project.
+            You can add up to two projects per day. One project counts as 6 hours, if two are added they are 3 hours each.
           </p>
         </div>
         

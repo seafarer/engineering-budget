@@ -7,7 +7,7 @@ interface CalendarProps {
   projects: Project[];
   selectedProject: Project | null;
   onDayClick: (date: Date) => void;
-  onRemoveAllocation: (date: string) => void;
+  onRemoveAllocation: (date: string, projectId: string) => void;
 }
 
 const Calendar: React.FC<CalendarProps> = ({ month, allocations, projects, selectedProject, onDayClick, onRemoveAllocation }) => {
@@ -45,7 +45,11 @@ const Calendar: React.FC<CalendarProps> = ({ month, allocations, projects, selec
     const dateStr = date.toISOString().split('T')[0];
     
     const allocation = allocations.find(a => a.date === dateStr);
-    const project = allocation ? projects.find(p => p.id === allocation.projectId) : null;
+    const dayProjects = allocation 
+      ? allocation.projectIds.map(id => projects.find(p => p.id === id)).filter(Boolean) as Project[]
+      : [];
+    
+    const isSharedDay = dayProjects.length === 2;
     
     days.push(
       <div 
@@ -55,30 +59,40 @@ const Calendar: React.FC<CalendarProps> = ({ month, allocations, projects, selec
           selectedProject ? 'border-l border-t border-l-sky-600 border-t-sky-600' : ''
         }`}
         style={{ 
-          backgroundColor: project ? project.color + '20' : '', 
-          borderLeft: project ? `3px solid ${project.color}` : '' 
+          borderLeft: dayProjects[0] ? `3px solid ${dayProjects[0].color}` : '',
+          background: dayProjects.length === 2 
+            ? `linear-gradient(135deg, ${dayProjects[0].color}20 50%, ${dayProjects[1].color}20 50%)`
+            : dayProjects[0] ? `${dayProjects[0].color}20` : ''
         }}
       >
-        <div className="flex justify-between">
+        <div className="flex flex-col gap-1">
           <span className="font-medium">{day}</span>
-          {project && (
-            <>
-              <span className="text-xs p-1 rounded" style={{ backgroundColor: project.color + '30' }}>
-                {project.name}
-              </span>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onRemoveAllocation(dateStr);
-                }}
-                className="absolute top-1 right-1 opacity-0 bg-white/50 group-hover:opacity-100 p-1 text-gray-500 hover:text-red-600 transition-opacity rounded-full hover:bg-white"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </>
-          )}
+          <div className="flex flex-col gap-1">
+            {dayProjects.map(project => (
+              <div key={project.id} className="flex items-center justify-between">
+                <span 
+                  className="text-xs p-1 rounded flex-1" 
+                  style={{ 
+                    backgroundColor: project.color + '30',
+                    fontSize: isSharedDay ? '0.65rem' : '0.75rem'
+                  }}
+                >
+                  {project.name} {isSharedDay ? '(3h)' : '(6h)'}
+                </span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRemoveAllocation(dateStr, project.id);
+                  }}
+                  className="opacity-0 group-hover:opacity-100 p-1 text-gray-500 hover:text-red-600 transition-opacity rounded-full hover:bg-white"
+                >
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );

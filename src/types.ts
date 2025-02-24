@@ -6,6 +6,6 @@ export interface Project {
 }
 
 export interface DayAllocation {
-  date: string; // ISO format
-  projectId: string;
+  date: string;
+  projectIds: string[];  // Changed from projectId to projectIds array
 }
