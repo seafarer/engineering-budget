@@ -41,7 +41,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ onAddProject }) => {
           Add New Project
         </button>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-3 p-3 border rounded bg-gray-50">
+        <form onSubmit={handleSubmit} className="space-y-3 p-3 border border-gray-200 rounded bg-gray-50">
           <div>
             <label className="block text-sm font-medium mb-1">
               Project Name
@@ -50,7 +50,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ onAddProject }) => {
               type="text"
               value={name}
               onChange={e => setName(e.target.value)}
-              className="w-full px-3 py-2 border rounded"
+              className="w-full px-3 py-2 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-sky-600"
               placeholder="Website Redesign"
             />
           </div>
@@ -64,7 +64,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ onAddProject }) => {
               value={totalHours}
               onChange={e => setTotalHours(e.target.value)}
               min="1"
-              className="w-full px-3 py-2 border rounded"
+              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-sky-600"
               placeholder="40"
             />
           </div>
@@ -84,7 +84,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ onAddProject }) => {
           <div className="flex space-x-2">
             <button
               type="submit"
-              className="flex-1 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              className="flex-1 py-2 bg-sky-600 text-white rounded hover:bg-sky-700"
             >
               Add Project
             </button>
